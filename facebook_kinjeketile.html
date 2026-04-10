@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Facebook – Kinjeketile Ngwale</title>
+<style>
+  :root {
+    --bg:       #18191A;
+    --surface:  #242526;
+    --surface2: #3A3B3C;
+    --border:   #3E4042;
+    --text:     #E4E6EB;
+    --text2:    #B0B3B8;
+    --blue:     #2D88FF;
+    --blue-dim: #263951;
+    --hover:    #3A3B3C;
+    --input-bg: #3A3B3C;
+    --comment-bg: #3A3B3C;
+    --empty-bg: #3a3200;
+    --empty-border: #a07800;
+    --empty-text: #e0b800;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 15px; color: var(--text); }
+
+  /* NAV */
+  .topbar { background: var(--surface); height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+  .topbar-logo { color: var(--blue); font-size: 28px; font-weight: 900; cursor: pointer; }
+  .topbar-search { background: var(--input-bg); border: none; border-radius: 20px; padding: 8px 16px 8px 36px; font-size: 15px; width: 220px; outline: none; cursor: pointer; color: var(--text); }
+  .topbar-search::placeholder { color: var(--text2); }
+  .topbar-search-wrap { position: relative; }
+  .topbar-search-wrap::before { content: '🔍'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; }
+  .topbar-icons { display: flex; gap: 8px; }
+  .topbar-icon { width: 40px; height: 40px; background: var(--surface2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: background 0.15s; position: relative; }
+  .topbar-icon:hover { background: var(--border); }
+  .notif-badge { position: absolute; top: 0; right: 0; background: #E41E3F; color: white; border-radius: 10px; font-size: 11px; font-weight: 700; padding: 1px 5px; border: 2px solid var(--surface); }
+
+  /* PROFILE */
+  .profile-wrapper { max-width: 940px; margin: 0 auto; }
+  .cover-photo { width: 100%; height: 350px; background: linear-gradient(160deg, #1a0a02 0%, #4A2C0A 40%, #8B4513 75%, #D2691E 100%); position: relative; border-radius: 0 0 8px 8px; overflow: hidden; cursor: pointer; }
+  .cover-photo:hover::after { content: '📷 Cambiar foto de portada'; position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.8); color: white; padding: 6px 12px; border-radius: 6px; font-size: 14px; font-weight: 600; }
+  .cover-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0); transition: background 0.2s; }
+  .cover-photo:hover .cover-overlay { background: rgba(0,0,0,0.15); }
+  .cover-placeholder { position: absolute; bottom: 50%; left: 50%; transform: translate(-50%, 50%); color: rgba(255,255,255,0.3); font-size: 14px; font-style: italic; pointer-events: none; }
+
+  .profile-bar { background: var(--surface); padding-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+  .profile-info-row { max-width: 940px; margin: 0 auto; padding: 0 16px; display: flex; align-items: flex-end; gap: 16px; }
+  .profile-pic-wrap { position: relative; margin-top: -36px; }
+  .profile-pic { width: 168px; height: 168px; border-radius: 50%; border: 4px solid var(--surface); background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 60px; font-weight: 800; color: var(--text2); cursor: pointer; overflow: hidden; transition: opacity 0.2s; }
+  .profile-pic:hover { opacity: 0.9; }
+  .profile-pic-cam { position: absolute; bottom: 8px; right: 8px; background: var(--surface2); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; border: 2px solid var(--surface); }
+  .profile-details { flex: 1; padding-bottom: 12px; }
+  .profile-name { font-size: 28px; font-weight: 800; color: var(--text); }
+  .profile-friends-count { font-size: 15px; color: var(--text2); margin-top: 4px; }
+  .profile-friends-count span { color: var(--text); font-weight: 600; }
+  .profile-friend-avatars { display: flex; margin-top: 6px; }
+  .friend-mini { width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--surface); margin-right: -8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--text2); }
+  .profile-buttons { display: flex; gap: 8px; padding-bottom: 12px; }
+  .btn { border: none; border-radius: 6px; padding: 8px 16px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: filter 0.15s; }
+  .btn:hover { filter: brightness(1.1); }
+  .btn-primary { background: var(--blue); color: white; }
+  .btn-secondary { background: var(--surface2); color: var(--text); }
+  .btn-danger { background: var(--surface2); color: var(--text); }
+
+  /* TABS */
+  .profile-tabs { max-width: 940px; margin: 0 auto; padding: 0 16px; display: flex; border-top: 1px solid var(--border); }
+  .tab { padding: 14px 16px; font-size: 15px; font-weight: 600; color: var(--text2); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.15s; }
+  .tab:hover { background: var(--hover); border-radius: 8px 8px 0 0; color: var(--text); }
+  .tab.active { color: var(--blue); border-bottom: 3px solid var(--blue); }
+
+  /* TAB CONTENT */
+  .tab-content { display: none; max-width: 940px; margin: 0 auto; padding: 16px; gap: 16px; }
+  .tab-content.active { display: flex; }
+  .col-left { width: 360px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+  .col-right { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+
+  /* CARDS */
+  .card { background: var(--surface); border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  .card-title { font-size: 20px; font-weight: 700; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; color: var(--text); }
+  .card-title a { font-size: 15px; font-weight: 600; color: var(--blue); cursor: pointer; }
+  .card-title a:hover { text-decoration: underline; }
+
+  .intro-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; font-size: 15px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .intro-row:last-child { border-bottom: none; }
+  .intro-icon { font-size: 20px; width: 24px; text-align: center; flex-shrink: 0; }
+  .edit-btn-small { background: none; border: none; color: var(--blue); font-size: 13px; font-weight: 600; cursor: pointer; margin-left: auto; padding: 2px 6px; border-radius: 4px; }
+  .edit-btn-small:hover { background: var(--blue-dim); }
+
+  .empty { background: var(--empty-bg); border: 1.5px dashed var(--empty-border); border-radius: 6px; padding: 3px 8px; color: var(--empty-text); font-style: italic; font-size: 14px; cursor: pointer; transition: background 0.15s; display: inline-block; }
+  .empty:hover { background: #4a3f00; }
+  .empty-block { background: var(--empty-bg); border: 1.5px dashed var(--empty-border); border-radius: 6px; padding: 6px 10px; color: var(--empty-text); font-style: italic; font-size: 14px; cursor: pointer; transition: background 0.15s; display: block; margin: 4px 0; }
+  .empty-block:hover { background: #4a3f00; }
+
+  /* FRIENDS GRID */
+  .friends-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .friend-item { cursor: pointer; border-radius: 8px; overflow: hidden; transition: opacity 0.15s; }
+  .friend-item:hover { opacity: 0.8; }
+  .friend-avatar-big { width: 100%; aspect-ratio: 1; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; color: var(--text2); border-radius: 8px; }
+  .friend-name { font-size: 13px; font-weight: 600; padding: 4px 2px; color: var(--text); }
+
+  /* PHOTOS GRID */
+  .photos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .photo-thumb { aspect-ratio: 1; background: var(--surface2); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 24px; transition: opacity 0.15s; overflow: hidden; border-radius: 4px; color: var(--text2); }
+  .photo-thumb:hover { opacity: 0.8; }
+
+  /* POSTS */
+  .post-card { background: var(--surface); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); overflow: hidden; }
+  .post-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
+  .post-avatar { width: 40px; height: 40px; border-radius: 50%; background: #8B4513; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0; cursor: pointer; transition: opacity 0.15s; }
+  .post-avatar:hover { opacity: 0.85; }
+  .post-name { font-size: 15px; font-weight: 700; cursor: pointer; color: var(--text); }
+  .post-name:hover { text-decoration: underline; }
+  .post-date { font-size: 13px; color: var(--text2); cursor: pointer; }
+  .post-date:hover { text-decoration: underline; }
+  .post-menu { margin-left: auto; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: var(--text2); transition: background 0.15s; }
+  .post-menu:hover { background: var(--hover); }
+  .post-body { padding: 4px 16px 12px; font-size: 15px; line-height: 1.5; color: var(--text); }
+  .post-image { width: 100%; min-height: 200px; background: var(--surface2); display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 14px; cursor: pointer; transition: opacity 0.15s; flex-direction: column; gap: 8px; }
+  .post-image:hover { opacity: 0.85; }
+  .post-reactions-bar { padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: var(--text2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .post-reactions-bar span { cursor: pointer; }
+  .post-reactions-bar span:hover { text-decoration: underline; }
+  .post-actions { display: flex; padding: 4px 16px; }
+  .action-btn { flex: 1; background: none; border: none; padding: 8px; border-radius: 6px; font-size: 15px; font-weight: 600; color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.15s; }
+  .action-btn:hover { background: var(--hover); }
+  .action-btn.liked { color: var(--blue); }
+
+  .reaction-popup { display: none; position: absolute; background: var(--surface); border: 1px solid var(--border); border-radius: 30px; padding: 6px 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.5); gap: 4px; bottom: 44px; left: 0; z-index: 20; }
+  .reaction-wrap { position: relative; flex: 1; display: flex; align-items: center; justify-content: center; }
+  .reaction-wrap:hover .reaction-popup { display: flex; }
+  .reaction-emoji { font-size: 28px; cursor: pointer; transform: scale(1); transition: transform 0.15s; line-height: 1; }
+  .reaction-emoji:hover { transform: scale(1.35) translateY(-4px); }
+
+  /* COMMENTS */
+  .comment-section { padding: 8px 16px 12px; background: var(--bg); }
+  .comment-input-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .comment-input { flex: 1; background: var(--surface2); border: none; border-radius: 20px; padding: 8px 14px; font-size: 14px; outline: none; font-family: inherit; cursor: text; color: var(--text); }
+  .comment-input::placeholder { color: var(--text2); }
+  .comment-input:focus { box-shadow: 0 0 0 2px var(--blue); }
+  .comment-box { display: flex; gap: 8px; margin-top: 8px; }
+  .comment-bubble { background: var(--surface2); border-radius: 18px; padding: 8px 12px; font-size: 14px; flex: 1; color: var(--text); }
+  .comment-user { font-weight: 700; cursor: pointer; color: var(--text); }
+  .comment-user:hover { text-decoration: underline; }
+  .comment-actions { display: flex; gap: 12px; margin-top: 4px; font-size: 12px; color: var(--text2); padding-left: 4px; }
+  .comment-action { cursor: pointer; font-weight: 600; color: var(--text2); }
+  .comment-action:hover { text-decoration: underline; }
+  .comment-like-count { color: var(--blue); cursor: pointer; }
+
+  /* SHARE POST BOX */
+  .share-box { background: var(--surface); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); padding: 12px 16px; }
+  .share-input-row { display: flex; gap: 10px; align-items: center; }
+  .share-input { flex: 1; background: var(--surface2); border: none; border-radius: 20px; padding: 10px 16px; font-size: 16px; color: var(--text2); cursor: pointer; font-family: inherit; }
+  .share-input:focus { outline: none; background: var(--hover); color: var(--text); }
+  .share-divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+  .share-actions { display: flex; gap: 4px; }
+  .share-action { flex: 1; background: none; border: none; border-radius: 6px; padding: 8px; font-size: 14px; font-weight: 600; color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.15s; }
+  .share-action:hover { background: var(--hover); color: var(--text); }
+
+  /* ABOUT TAB */
+  .about-section { background: var(--surface); border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); margin-bottom: 12px; }
+  .about-section-title { font-size: 17px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+  .about-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 15px; color: var(--text); }
+  .about-row:last-child { border-bottom: none; }
+  .about-label { color: var(--text2); width: 160px; flex-shrink: 0; }
+  .about-value { flex: 1; }
+  .about-edit { margin-left: auto; color: var(--blue); font-size: 14px; font-weight: 600; cursor: pointer; padding: 2px 8px; border-radius: 4px; }
+  .about-edit:hover { background: var(--blue-dim); }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: 12px; width: 480px; max-width: 95vw; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.6); animation: slideUp 0.2s ease; }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 20px; font-weight: 700; color: var(--text); }
+  .modal-close { width: 36px; height: 36px; background: var(--surface2); border: none; border-radius: 50%; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; color: var(--text); }
+  .modal-close:hover { background: var(--border); }
+  .modal-body { padding: 16px; }
+  .modal-input { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; font-size: 15px; font-family: inherit; outline: none; margin-bottom: 10px; resize: vertical; min-height: 80px; background: var(--surface2); color: var(--text); }
+  .modal-input:focus { border-color: var(--blue); }
+  .modal-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* NOTIFICATION DROPDOWN */
+  .dropdown { display: none; position: absolute; top: 56px; right: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 4px 24px rgba(0,0,0,0.5); width: 360px; z-index: 150; padding: 8px; }
+  .dropdown.open { display: block; }
+  .dropdown-title { font-size: 20px; font-weight: 700; padding: 8px; color: var(--text); }
+  .notif-item { display: flex; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; align-items: center; }
+  .notif-item:hover { background: var(--hover); }
+  .notif-icon { width: 50px; height: 50px; background: var(--surface2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .notif-text { font-size: 14px; line-height: 1.4; color: var(--text); }
+  .notif-time { font-size: 13px; color: var(--blue); font-weight: 600; }
+  .notif-unread { background: var(--blue-dim); }
+
+  /* LIKE ANIMATION */
+  @keyframes popLike { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+  .pop { animation: popLike 0.3s ease; }
+
+  /* TAG */
+  .post-tag { display: inline-block; background: var(--blue-dim); color: var(--blue); font-size: 13px; font-weight: 600; padding: 2px 8px; border-radius: 4px; cursor: pointer; }
+  .post-tag:hover { background: #1e3d6e; }
+
+  /* QUOTE */
+  .post-quote { font-style: italic; font-size: 16px; border-left: 4px solid var(--blue); padding: 8px 12px; background: var(--surface2); border-radius: 0 8px 8px 0; margin: 8px 0; color: var(--text); }
+
+  /* STORY BAR */
+  .stories-bar { display: flex; gap: 10px; padding: 12px 0 4px; overflow-x: auto; scrollbar-width: none; }
+  .stories-bar::-webkit-scrollbar { display: none; }
+  .story { width: 110px; height: 200px; border-radius: 12px; flex-shrink: 0; cursor: pointer; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; transition: transform 0.15s; }
+  .story:hover { transform: scale(1.03); }
+  .story-bg { position: absolute; inset: 0; background: linear-gradient(135deg, #1a0a02, #8B4513); }
+  .story-add .story-bg { background: var(--surface2); }
+  .story-label { position: relative; padding: 8px; font-size: 13px; font-weight: 700; color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.7); }
+  .story-avatar { position: absolute; top: 10px; left: 10px; width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--blue); background: #8B4513; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
+  .story-plus { position: absolute; top: 10px; left: 10px; width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--surface); background: var(--blue); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px; }
+  .story-add .story-label { color: var(--text); text-shadow: none; font-size: 13px; }
+
+  /* LIKE COUNT */
+  .like-count { font-weight: 600; }
+
+  /* POST EVENT BADGE */
+  .event-badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 4px; margin-bottom: 8px; }
+  .badge-inicio  { background: #1a2e4a; color: #7eb8f7; }
+  .badge-desarrollo { background: #3a2e00; color: #f0c040; }
+  .badge-clave   { background: #3a1a2a; color: #f07ab0; }
+  .badge-conclusion { background: #0e2e1a; color: #5de0a0; }
+
+  /* ASIDE ABOUT NAV */
+  #aside-info-basica, #aside-trabajo-edu, #aside-lugares, #aside-familia, #aside-filosofia {
+    color: var(--text2); border-radius: 6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <span class="topbar-logo">facebook</span>
+  <div class="topbar-search-wrap">
+    <input class="topbar-search" placeholder="Buscar en Facebook" onclick="alert('Buscador de Facebook')">
+  </div>
+  <div class="topbar-icons">
+    <div class="topbar-icon" onclick="toggleDropdown('notif-dropdown')" title="Notificaciones">
+      🔔
+      <span class="notif-badge">3</span>
+    </div>
+    <div class="topbar-icon" onclick="toggleDropdown('msg-dropdown')" title="Mensajes">💬<span class="notif-badge">1</span></div>
+    <div class="topbar-icon" title="Menú">☰</div>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS DROPDOWN -->
+<div class="dropdown" id="notif-dropdown">
+  <div class="dropdown-title">Notificaciones</div>
+  <div class="notif-item notif-unread" onclick="this.classList.remove('notif-unread')">
+    <div class="notif-icon">👍</div>
+    <div><div class="notif-text"><b>Hasan Stiri</b> le dio Me gusta a tu publicación sobre la rebelión.</div><div class="notif-time">Hace 2 horas</div></div>
+  </div>
+  <div class="notif-item notif-unread" onclick="this.classList.remove('notif-unread')">
+    <div class="notif-icon">💬</div>
+    <div><div class="notif-text"><b>Autoridades alemanas</b> comentaron tu foto.</div><div class="notif-time">Hace 5 horas</div></div>
+  </div>
+  <div class="notif-item notif-unread" onclick="this.classList.remove('notif-unread')">
+    <div class="notif-icon">👥</div>
+    <div><div class="notif-text">Tienes una solicitud de amistad pendiente.</div><div class="notif-time">Ayer</div></div>
+  </div>
+  <div class="notif-item">
+    <div class="notif-icon">🔥</div>
+    <div><div class="notif-text">Tu publicación tuvo muchas reacciones.</div><div class="notif-time">Hace 2 días</div></div>
+  </div>
+</div>
+
+<!-- MESSAGES DROPDOWN -->
+<div class="dropdown" id="msg-dropdown" style="width:300px;">
+  <div class="dropdown-title">Mensajes</div>
+  <div class="notif-item notif-unread">
+    <div class="notif-icon">✉️</div>
+    <div><div class="notif-text"><b>Aliado del movimiento:</b> ¿Cuándo comenzamos la marcha?</div><div class="notif-time">Hace 1 hora</div></div>
+  </div>
+</div>
+
+<!-- COVER + PROFILE -->
+<div class="profile-wrapper">
+  <div class="profile-bar">
+    <div class="cover-photo" onclick="openModal('cover-modal')">
+      <div class="cover-overlay"></div>
+      <span class="cover-placeholder">📷 Haz clic para agregar foto de portada</span>
+    </div>
+    <div class="profile-info-row">
+      <div class="profile-pic-wrap">
+        <div class="profile-pic" onclick="openModal('pic-modal')">KN</div>
+        <div class="profile-pic-cam" onclick="openModal('pic-modal')">📷</div>
+      </div>
+      <div class="profile-details">
+        <div class="profile-name" onclick="openModal('name-modal')" style="cursor:pointer; display:inline-block;">
+          <span class="empty" id="profile-name-display">Kinjeketile Ngwale — haz clic para completar</span>
+        </div>
+        <div class="profile-friends-count"><span id="friends-count">0</span> amigos</div>
+        <div class="profile-friend-avatars" id="friend-avatars-mini"></div>
+      </div>
+      <div class="profile-buttons">
+        <button class="btn btn-primary" onclick="alert('¡Solicitud de amistad enviada!')">➕ Agregar</button>
+        <button class="btn btn-secondary" onclick="openModal('msg-modal')">💬 Mensaje</button>
+        <button class="btn btn-secondary" onclick="toggleDropdown('more-dropdown')">▾ Más</button>
+      </div>
+    </div>
+
+    <div class="profile-tabs">
+      <div class="tab active" onclick="switchTab('inicio')">Inicio</div>
+      <div class="tab" onclick="switchTab('acerca')">Acerca de</div>
+      <div class="tab" onclick="switchTab('amigos')">Amigos</div>
+      <div class="tab" onclick="switchTab('fotos')">Fotos</div>
+    </div>
+  </div>
+
+  <!-- TAB: INICIO -->
+  <div class="tab-content active" id="tab-inicio">
+    <div class="col-left">
+
+      <!-- INTRO -->
+      <div class="card">
+        <div class="card-title">Introducción <a onclick="openModal('bio-modal')">Editar</a></div>
+        <div class="intro-row"><span class="intro-icon">📅</span><span>Nacido el <span class="empty" onclick="openModal('birth-modal')">Fecha de nacimiento</span></span></div>
+        <div class="intro-row"><span class="intro-icon">📍</span><span>Vive en <span class="empty" onclick="openModal('city-modal')">Ciudad / Región</span></span></div>
+        <div class="intro-row"><span class="intro-icon">🏠</span><span>De <span class="empty" onclick="openModal('origin-modal')">Lugar de origen</span></span></div>
+        <div class="intro-row"><span class="intro-icon">❤️</span><span class="empty" onclick="openModal('rel-modal')">Estado sentimental</span></div>
+        <div class="intro-row"><span class="intro-icon">🎓</span><span>Estudió en <span class="empty" onclick="openModal('edu-modal')">Universidad / escuela</span></span></div>
+        <div class="intro-row"><span class="intro-icon">💼</span><span><span class="empty" onclick="openModal('work-modal')">Ocupación / cargo</span></span></div>
+        <div class="intro-row"><span class="intro-icon">🌐</span><span>Habla: <span class="empty" onclick="openModal('lang-modal')">Idiomas</span></span></div>
+        <div class="intro-row"><span class="intro-icon">✝️</span><span><span class="empty" onclick="openModal('rel2-modal')">Religión / espiritualidad</span></span></div>
+        <div class="intro-row"><span class="intro-icon">🏛️</span><span><span class="empty" onclick="openModal('pol-modal')">Ideología política</span></span></div>
+        <div class="intro-row"><span class="intro-icon">⭐</span><span>Inspirado por <span class="empty" onclick="openModal('insp-modal')">Persona inspiradora</span></span></div>
+        <div style="margin-top: 10px; padding: 10px; background: var(--bg); border-radius: 8px; cursor: pointer;" onclick="openModal('quote-modal')">
+          <span style="color:var(--text2); font-style:italic; font-size:14px;">"</span>
+          <span class="empty" id="quote-display" style="font-style:italic;">Cita o frase del personaje — haz clic para editar</span>
+          <span style="color:var(--text2); font-style:italic; font-size:14px;">"</span>
+        </div>
+        <button class="btn btn-secondary" style="width:100%; margin-top:12px; justify-content:center;" onclick="openModal('bio-modal')">Editar detalles</button>
+      </div>
+
+      <!-- FOTOS -->
+      <div class="card">
+        <div class="card-title">Fotos <a onclick="switchTab('fotos')">Ver todas</a></div>
+        <div class="photos-grid">
+          <div class="photo-thumb" onclick="openModal('photo-modal')">📷</div>
+          <div class="photo-thumb" onclick="openModal('photo-modal')">📷</div>
+          <div class="photo-thumb" onclick="openModal('photo-modal')">📷</div>
+          <div class="photo-thumb" onclick="openModal('photo-modal')">📷</div>
+          <div class="photo-thumb" onclick="openModal('photo-modal')">📷</div>
+          <div class="photo-thumb" onclick="openModal('photo-modal')">➕ Agregar</div>
+        </div>
+      </div>
+
+      <!-- AMIGOS MINI -->
+      <div class="card">
+        <div class="card-title">Amigos <a onclick="switchTab('amigos')">Ver todos</a></div>
+        <div class="friends-grid" id="friends-mini-grid">
+          <div class="friend-item" onclick="openModal('friend1-modal')"><div class="friend-avatar-big">👤</div><div class="friend-name empty-block">Familiar / aliado 1</div></div>
+          <div class="friend-item" onclick="openModal('friend2-modal')"><div class="friend-avatar-big">👤</div><div class="friend-name empty-block">Familiar / aliado 2</div></div>
+          <div class="friend-item" onclick="openModal('friend3-modal')"><div class="friend-avatar-big">👤</div><div class="friend-name empty-block">Amigo cercano</div></div>
+          <div class="friend-item" onclick="openModal('friend4-modal')"><div class="friend-avatar-big">👤</div><div class="friend-name empty-block">Aliado político</div></div>
+          <div class="friend-item" onclick="openModal('friend5-modal')"><div class="friend-avatar-big">👤</div><div class="friend-name empty-block">Oponente / enemigo</div></div>
+          <div class="friend-item" onclick="openModal('friend6-modal')"><div class="friend-avatar-big">👤</div><div class="friend-name empty-block">Otro personaje</div></div>
+        </div>
+        <button class="btn btn-secondary" style="width:100%; margin-top:10px; justify-content:center;" onclick="switchTab('amigos')">Ver todos los amigos</button>
+      </div>
+    </div>
+
+    <div class="col-right">
+
+      <!-- STORY BAR -->
+      <div class="stories-bar">
+        <div class="story story-add" onclick="openModal('story-modal')">
+          <div class="story-bg"></div>
+          <div class="story-plus">+</div>
+          <div class="story-label" style="color:var(--text); text-shadow:none;">Crear historia</div>
+        </div>
+        <div class="story" onclick="alert('Historia de Kinjeketile')">
+          <div class="story-bg" style="background: linear-gradient(160deg,#4A2C0A,#D2691E);"></div>
+          <div class="story-avatar">KN</div>
+          <div class="story-label">Tu historia</div>
+        </div>
+        <div class="story" onclick="alert('Historia del movimiento')">
+          <div class="story-bg" style="background: linear-gradient(160deg,#1a4a1a,#2d8b2d);"></div>
+          <div class="story-avatar" style="background:#2d8b2d;">🌿</div>
+          <div class="story-label">El Movimiento</div>
+        </div>
+      </div>
+
+      <!-- SHARE BOX -->
+      <div class="share-box">
+        <div class="share-input-row">
+          <div class="profile-pic" style="width:40px;height:40px;font-size:14px;margin-top:0;">KN</div>
+          <input class="share-input" placeholder="¿Qué estás pensando, Kinjeketile?" onclick="openModal('new-post-modal')">
+        </div>
+        <hr class="share-divider">
+        <div class="share-actions">
+          <button class="share-action" onclick="openModal('photo-modal')">📷 Foto/Video</button>
+          <button class="share-action" onclick="openModal('new-post-modal')">😊 Sentimiento</button>
+          <button class="share-action" onclick="openModal('event-modal')">📅 Evento</button>
+        </div>
+      </div>
+
+      <!-- POST 1: INICIO -->
+      <div class="post-card" id="post1">
+        <div class="post-header">
+          <div class="post-avatar" onclick="switchTab('inicio')">KN</div>
+          <div class="post-meta">
+            <div class="post-name" onclick="scrollTo(0,0)">Kinjeketile Ngwale</div>
+            <div class="post-date" onclick="openModal('post1-date-modal')">
+              <span class="empty" id="p1-date">Fecha del primer evento — haz clic para editar</span> · 🌍
+            </div>
+          </div>
+          <div class="post-menu" onclick="openModal('post-options-modal')">···</div>
+        </div>
+        <div class="post-body">
+          <span class="event-badge badge-inicio">📌 INICIO DEL PROCESO</span><br>
+          <span class="empty-block" onclick="openModal('post1-body-modal')">Descripción del inicio del proceso de independencia/autonomía. ¿Qué ocurrió? ¿Dónde? ¿Cuándo exactamente? Menciona grupos, organizaciones y países involucrados.</span>
+          <div style="margin-top:8px;">
+            <span class="post-tag" onclick="openModal('tag-modal')">#MajiMajiRebellion</span>
+            <span class="post-tag" onclick="openModal('tag-modal')">#Tanzania</span>
+            <span class="post-tag" onclick="openModal('tag-modal')">#AgregaEtiqueta</span>
+          </div>
+        </div>
+        <div class="post-image" onclick="openModal('photo-modal')">
+          <span style="font-size:32px;">📷</span>
+          <span>Haz clic para agregar imagen del evento</span>
+        </div>
+        <div class="post-reactions-bar">
+          <span onclick="showReactionDetails('post1')">👍 ❤️ 😮 <span class="like-count" id="likes-post1">0</span></span>
+          <span onclick="toggleComments('comments-post1')"><span id="comment-count-post1">2</span> comentarios</span>
+        </div>
+        <div class="post-actions">
+          <div class="reaction-wrap">
+            <button class="action-btn" id="like-btn-post1" onclick="toggleLike('post1')">👍 Me gusta</button>
+            <div class="reaction-popup" id="reactions-post1">
+              <span class="reaction-emoji" onclick="setReaction('post1','👍','Me gusta')" title="Me gusta">👍</span>
+              <span class="reaction-emoji" onclick="setReaction('post1','❤️','Me encanta')" title="Me encanta">❤️</span>
+              <span class="reaction-emoji" onclick="setReaction('post1','😂','Jaja')" title="Jaja">😂</span>
+              <span class="reaction-emoji" onclick="setReaction('post1','😮','Asombro')" title="Asombro">😮</span>
+              <span class="reaction-emoji" onclick="setReaction('post1','😢','Tristeza')" title="Tristeza">😢</span>
+              <span class="reaction-emoji" onclick="setReaction('post1','😡','Enojo')" title="Enojo">😡</span>
+            </div>
+          </div>
+          <button class="action-btn" onclick="toggleComments('comments-post1')">💬 Comentar</button>
+          <button class="action-btn" onclick="sharePost('post1')">↗️ Compartir</button>
+        </div>
+        <div id="comments-post1" class="comment-section" style="display:none;">
+          <div class="comment-input-row">
+            <div class="post-avatar" style="width:32px;height:32px;font-size:12px;">KN</div>
+            <input class="comment-input" placeholder="Escribe un comentario…" onkeydown="addComment(event,'post1')">
+          </div>
+          <div id="comments-list-post1">
+            <div class="comment-box">
+              <div class="post-avatar" style="width:36px;height:36px;font-size:12px;background:#555;">P1</div>
+              <div>
+                <div class="comment-bubble">
+                  <div class="comment-user empty-block" style="margin:0;" onclick="openModal('comment-person-modal')">Nombre del personaje involucrado</div>
+                  <div class="empty-block" style="margin:2px 0 0;" onclick="openModal('comment-text-modal')">Diálogo o comentario sobre este evento</div>
+                </div>
+                <div class="comment-actions">
+                  <span class="comment-action" onclick="likeComment(this)">Me gusta</span>
+                  <span class="comment-action" onclick="openModal('reply-modal')">Responder</span>
+                  <span style="color:var(--text2);">Hace X horas</span>
+                </div>
+              </div>
+            </div>
+            <div class="comment-box">
+              <div class="post-avatar" style="width:36px;height:36px;font-size:12px;background:#2d8b2d;">P2</div>
+              <div>
+                <div class="comment-bubble">
+                  <div class="comment-user empty-block" style="margin:0;" onclick="openModal('comment-person-modal')">Otro personaje / grupo involucrado</div>
+                  <div class="empty-block" style="margin:2px 0 0;" onclick="openModal('comment-text-modal')">Respuesta o reacción al evento</div>
+                </div>
+                <div class="comment-actions">
+                  <span class="comment-action" onclick="likeComment(this)">Me gusta</span>
+                  <span class="comment-action" onclick="openModal('reply-modal')">Responder</span>
+                  <span style="color:var(--text2);">Hace X horas</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST 2: DESARROLLO -->
+      <div class="post-card" id="post2">
+        <div class="post-header">
+          <div class="post-avatar" onclick="scrollTo(0,0)">KN</div>
+          <div class="post-meta">
+            <div class="post-name" onclick="scrollTo(0,0)">Kinjeketile Ngwale</div>
+            <div class="post-date" onclick="openModal('post2-date-modal')">
+              <span class="empty" id="p2-date">Fecha del segundo evento — haz clic para editar</span> · 🌍
+            </div>
+          </div>
+          <div class="post-menu" onclick="openModal('post-options-modal')">···</div>
+        </div>
+        <div class="post-body">
+          <span class="event-badge badge-desarrollo">⚡ DESARROLLO DEL PROCESO</span><br>
+          <span class="empty-block" onclick="openModal('post2-body-modal')">Descripción del desarrollo: ¿Cómo avanzó el proceso? ¿Qué conflictos o alianzas surgieron? ¿Qué países u organizaciones participaron? Incluye personajes clave.</span>
+          <div style="margin-top:8px;">
+            <span class="post-tag" onclick="openModal('tag-modal')">#AgregaEtiqueta</span>
+          </div>
+        </div>
+        <div class="post-image" onclick="openModal('photo-modal')">
+          <span style="font-size:32px;">📷</span>
+          <span>Haz clic para agregar imagen del evento</span>
+        </div>
+        <div class="post-reactions-bar">
+          <span onclick="showReactionDetails('post2')">👍 ❤️ 😡 <span class="like-count" id="likes-post2">0</span></span>
+          <span onclick="toggleComments('comments-post2')"><span id="comment-count-post2">2</span> comentarios</span>
+        </div>
+        <div class="post-actions">
+          <div class="reaction-wrap">
+            <button class="action-btn" id="like-btn-post2" onclick="toggleLike('post2')">👍 Me gusta</button>
+            <div class="reaction-popup" id="reactions-post2">
+              <span class="reaction-emoji" onclick="setReaction('post2','👍','Me gusta')">👍</span>
+              <span class="reaction-emoji" onclick="setReaction('post2','❤️','Me encanta')">❤️</span>
+              <span class="reaction-emoji" onclick="setReaction('post2','😂','Jaja')">😂</span>
+              <span class="reaction-emoji" onclick="setReaction('post2','😮','Asombro')">😮</span>
+              <span class="reaction-emoji" onclick="setReaction('post2','😢','Tristeza')">😢</span>
+              <span class="reaction-emoji" onclick="setReaction('post2','😡','Enojo')">😡</span>
+            </div>
+          </div>
+          <button class="action-btn" onclick="toggleComments('comments-post2')">💬 Comentar</button>
+          <button class="action-btn" onclick="sharePost('post2')">↗️ Compartir</button>
+        </div>
+        <div id="comments-post2" class="comment-section" style="display:none;">
+          <div class="comment-input-row">
+            <div class="post-avatar" style="width:32px;height:32px;font-size:12px;">KN</div>
+            <input class="comment-input" placeholder="Escribe un comentario…" onkeydown="addComment(event,'post2')">
+          </div>
+          <div id="comments-list-post2">
+            <div class="comment-box">
+              <div class="post-avatar" style="width:36px;height:36px;font-size:12px;background:#555;">P3</div>
+              <div>
+                <div class="comment-bubble">
+                  <div class="comment-user empty-block" style="margin:0;" onclick="openModal('comment-person-modal')">Personaje / organización involucrada</div>
+                  <div class="empty-block" style="margin:2px 0 0;" onclick="openModal('comment-text-modal')">Diálogo o comentario sobre el desarrollo</div>
+                </div>
+                <div class="comment-actions">
+                  <span class="comment-action" onclick="likeComment(this)">Me gusta</span>
+                  <span class="comment-action" onclick="openModal('reply-modal')">Responder</span>
+                  <span style="color:var(--text2);">Hace X horas</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST 3: EVENTO CLAVE -->
+      <div class="post-card" id="post3">
+        <div class="post-header">
+          <div class="post-avatar" onclick="scrollTo(0,0)">KN</div>
+          <div class="post-meta">
+            <div class="post-name" onclick="scrollTo(0,0)">Kinjeketile Ngwale</div>
+            <div class="post-date" onclick="openModal('post3-date-modal')">
+              <span class="empty" id="p3-date">Fecha del tercer evento — haz clic para editar</span> · 🌍
+            </div>
+          </div>
+          <div class="post-menu" onclick="openModal('post-options-modal')">···</div>
+        </div>
+        <div class="post-body">
+          <span class="event-badge badge-clave">⚔️ EVENTO CLAVE</span><br>
+          <span class="empty-block" onclick="openModal('post3-body-modal')">Describe un evento crítico del proceso. Menciona todos los involucrados (personajes, grupos, organizaciones, países) y la fecha precisa.</span>
+          <div class="post-quote" onclick="openModal('quote-post-modal')">
+            "<span class="empty" id="post-quote-display">Cita directa del personaje o de alguien relacionado — haz clic para editar</span>"
+          </div>
+          <div style="margin-top:8px;">
+            <span class="post-tag" onclick="openModal('tag-modal')">#AgregaEtiqueta</span>
+          </div>
+        </div>
+        <div class="post-image" onclick="openModal('photo-modal')">
+          <span style="font-size:32px;">📷</span>
+          <span>Haz clic para agregar imagen del evento</span>
+        </div>
+        <div class="post-reactions-bar">
+          <span onclick="showReactionDetails('post3')">👍 😮 😢 <span class="like-count" id="likes-post3">0</span></span>
+          <span onclick="toggleComments('comments-post3')"><span id="comment-count-post3">1</span> comentario</span>
+        </div>
+        <div class="post-actions">
+          <div class="reaction-wrap">
+            <button class="action-btn" id="like-btn-post3" onclick="toggleLike('post3')">👍 Me gusta</button>
+            <div class="reaction-popup" id="reactions-post3">
+              <span class="reaction-emoji" onclick="setReaction('post3','👍','Me gusta')">👍</span>
+              <span class="reaction-emoji" onclick="setReaction('post3','❤️','Me encanta')">❤️</span>
+              <span class="reaction-emoji" onclick="setReaction('post3','😂','Jaja')">😂</span>
+              <span class="reaction-emoji" onclick="setReaction('post3','😮','Asombro')">😮</span>
+              <span class="reaction-emoji" onclick="setReaction('post3','😢','Tristeza')">😢</span>
+              <span class="reaction-emoji" onclick="setReaction('post3','😡','Enojo')">😡</span>
+            </div>
+          </div>
+          <button class="action-btn" onclick="toggleComments('comments-post3')">💬 Comentar</button>
+          <button class="action-btn" onclick="sharePost('post3')">↗️ Compartir</button>
+        </div>
+        <div id="comments-post3" class="comment-section" style="display:none;">
+          <div class="comment-input-row">
+            <div class="post-avatar" style="width:32px;height:32px;font-size:12px;">KN</div>
+            <input class="comment-input" placeholder="Escribe un comentario…" onkeydown="addComment(event,'post3')">
+          </div>
+          <div id="comments-list-post3">
+            <div class="comment-box">
+              <div class="post-avatar" style="width:36px;height:36px;font-size:12px;background:#8B0000;">P4</div>
+              <div>
+                <div class="comment-bubble">
+                  <div class="comment-user empty-block" style="margin:0;" onclick="openModal('comment-person-modal')">Personaje involucrado</div>
+                  <div class="empty-block" style="margin:2px 0 0;" onclick="openModal('comment-text-modal')">Comentario o reacción al evento clave</div>
+                </div>
+                <div class="comment-actions">
+                  <span class="comment-action" onclick="likeComment(this)">Me gusta</span>
+                  <span class="comment-action" onclick="openModal('reply-modal')">Responder</span>
+                  <span style="color:var(--text2);">Hace X días</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST 4: CONCLUSIÓN -->
+      <div class="post-card" id="post4">
+        <div class="post-header">
+          <div class="post-avatar" onclick="scrollTo(0,0)">KN</div>
+          <div class="post-meta">
+            <div class="post-name" onclick="scrollTo(0,0)">Kinjeketile Ngwale</div>
+            <div class="post-date" onclick="openModal('post4-date-modal')">
+              <span class="empty" id="p4-date">Fecha del desenlace — haz clic para editar</span> · 🌍
+            </div>
+          </div>
+          <div class="post-menu" onclick="openModal('post-options-modal')">···</div>
+        </div>
+        <div class="post-body">
+          <span class="event-badge badge-conclusion">🏁 CONCLUSIÓN DEL PROCESO</span><br>
+          <span class="empty-block" onclick="openModal('post4-body-modal')">Narración del final del proceso: ¿Cómo terminó? ¿Qué resultado tuvo para el personaje y los involucrados? ¿Cuál fue el impacto histórico?</span>
+          <div style="margin-top:8px;">
+            <span class="post-tag" onclick="openModal('tag-modal')">#AgregaEtiqueta</span>
+          </div>
+        </div>
+        <div class="post-image" onclick="openModal('photo-modal')">
+          <span style="font-size:32px;">📷</span>
+          <span>Haz clic para agregar imagen del desenlace</span>
+        </div>
+        <div class="post-reactions-bar">
+          <span onclick="showReactionDetails('post4')">👍 ❤️ 😢 <span class="like-count" id="likes-post4">0</span></span>
+          <span onclick="toggleComments('comments-post4')"><span id="comment-count-post4">2</span> comentarios</span>
+        </div>
+        <div class="post-actions">
+          <div class="reaction-wrap">
+            <button class="action-btn" id="like-btn-post4" onclick="toggleLike('post4')">👍 Me gusta</button>
+            <div class="reaction-popup" id="reactions-post4">
+              <span class="reaction-emoji" onclick="setReaction('post4','👍','Me gusta')">👍</span>
+              <span class="reaction-emoji" onclick="setReaction('post4','❤️','Me encanta')">❤️</span>
+              <span class="reaction-emoji" onclick="setReaction('post4','😂','Jaja')">😂</span>
+              <span class="reaction-emoji" onclick="setReaction('post4','😮','Asombro')">😮</span>
+              <span class="reaction-emoji" onclick="setReaction('post4','😢','Tristeza')">😢</span>
+              <span class="reaction-emoji" onclick="setReaction('post4','😡','Enojo')">😡</span>
+            </div>
+          </div>
+          <button class="action-btn" onclick="toggleComments('comments-post4')">💬 Comentar</button>
+          <button class="action-btn" onclick="sharePost('post4')">↗️ Compartir</button>
+        </div>
+        <div id="comments-post4" class="comment-section" style="display:none;">
+          <div class="comment-input-row">
+            <div class="post-avatar" style="width:32px;height:32px;font-size:12px;">KN</div>
+            <input class="comment-input" placeholder="Escribe un comentario…" onkeydown="addComment(event,'post4')">
+          </div>
+          <div id="comments-list-post4">
+            <div class="comment-box">
+              <div class="post-avatar" style="width:36px;height:36px;font-size:12px;background:#555;">P5</div>
+              <div>
+                <div class="comment-bubble">
+                  <div class="comment-user empty-block" style="margin:0;" onclick="openModal('comment-person-modal')">Personaje histórico / aliado / oponente</div>
+                  <div class="empty-block" style="margin:2px 0 0;" onclick="openModal('comment-text-modal')">Comentario final sobre el resultado del proceso</div>
+                </div>
+                <div class="comment-actions">
+                  <span class="comment-action" onclick="likeComment(this)">Me gusta</span>
+                  <span class="comment-action" onclick="openModal('reply-modal')">Responder</span>
+                  <span style="color:var(--text2);">Hace X días</span>
+                </div>
+              </div>
+            </div>
+            <div class="comment-box">
+              <div class="post-avatar" style="width:36px;height:36px;font-size:12px;">KN</div>
+              <div>
+                <div class="comment-bubble">
+                  <div class="comment-user empty-block" style="margin:0;" onclick="openModal('comment-person-modal')">Kinjeketile Ngwale — respuesta final</div>
+                  <div class="empty-block" style="margin:2px 0 0;" onclick="openModal('comment-text-modal')">Palabras finales o legado del personaje</div>
+                </div>
+                <div class="comment-actions">
+                  <span class="comment-action" onclick="likeComment(this)">Me gusta</span>
+                  <span class="comment-action" onclick="openModal('reply-modal')">Responder</span>
+                  <span style="color:var(--text2);">Hace X días</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TAB: ACERCA DE -->
+  <div class="tab-content" id="tab-acerca" style="flex-direction:column;">
+    <div style="display:flex; gap:16px; align-items:flex-start;">
+      <div style="width:260px; flex-shrink:0;">
+        <div class="card" style="margin-bottom:0;">
+          <div style="font-size:16px; font-weight:700; margin-bottom:8px;">Información</div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <div style="padding:8px; border-radius:6px; cursor:pointer; color:var(--blue); font-weight:600;" onclick="showAboutSection('info-basica')" id="aside-info-basica">Información básica</div>
+            <div style="padding:8px; border-radius:6px; cursor:pointer; color:var(--text2);" onclick="showAboutSection('trabajo-edu')" id="aside-trabajo-edu">Trabajo y educación</div>
+            <div style="padding:8px; border-radius:6px; cursor:pointer; color:var(--text2);" onclick="showAboutSection('lugares')" id="aside-lugares">Lugares en los que viviste</div>
+            <div style="padding:8px; border-radius:6px; cursor:pointer; color:var(--text2);" onclick="showAboutSection('familia')" id="aside-familia">Familia y relaciones</div>
+            <div style="padding:8px; border-radius:6px; cursor:pointer; color:var(--text2);" onclick="showAboutSection('filosofia')" id="aside-filosofia">Filosofía e intereses</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div id="about-info-basica">
+          <div class="about-section">
+            <div class="about-section-title">Información básica</div>
+            <div class="about-row"><span class="about-label">Nombre completo</span><span class="about-value"><span class="empty" onclick="openModal('name-modal')">Nombre del personaje</span></span><span class="about-edit" onclick="openModal('name-modal')">Editar</span></div>
+            <div class="about-row"><span class="about-label">Fecha de nacimiento</span><span class="about-value"><span class="empty" onclick="openModal('birth-modal')">dd/mm/aaaa</span></span><span class="about-edit" onclick="openModal('birth-modal')">Editar</span></div>
+            <div class="about-row"><span class="about-label">Género</span><span class="about-value"><span class="empty" onclick="openModal('gender-modal')">Género del personaje</span></span><span class="about-edit" onclick="openModal('gender-modal')">Editar</span></div>
+            <div class="about-row"><span class="about-label">Idiomas</span><span class="about-value"><span class="empty" onclick="openModal('lang-modal')">Idiomas que habla</span></span><span class="about-edit" onclick="openModal('lang-modal')">Editar</span></div>
+            <div class="about-row"><span class="about-label">Sobre mí</span><span class="about-value"><span class="empty-block" onclick="openModal('bio-modal')">Descripción biográfica del personaje…</span></span><span class="about-edit" onclick="openModal('bio-modal')">Editar</span></div>
+          </div>
+        </div>
+        <div id="about-trabajo-edu" style="display:none;">
+          <div class="about-section">
+            <div class="about-section-title">Trabajo</div>
+            <div class="about-row"><span class="about-label">Cargo / Rol</span><span class="about-value"><span class="empty" onclick="openModal('work-modal')">Cargo u ocupación</span></span><span class="about-edit" onclick="openModal('work-modal')">Editar</span></div>
+            <div class="about-row"><span class="about-label">Organización</span><span class="about-value"><span class="empty" onclick="openModal('org-modal')">Organización o empresa</span></span><span class="about-edit" onclick="openModal('org-modal')">Editar</span></div>
+          </div>
+          <div class="about-section">
+            <div class="about-section-title">Educación</div>
+            <div class="about-row"><span class="about-label">Universidad</span><span class="about-value"><span class="empty" onclick="openModal('edu-modal')">Universidad o institución</span></span><span class="about-edit" onclick="openModal('edu-modal')">Editar</span></div>
+            <div class="about-row"><span class="about-label">Fuentes de aprendizaje</span><span class="about-value"><span class="empty" onclick="openModal('learn-modal')">Fuentes de conocimiento</span></span><span class="about-edit" onclick="openModal('learn-modal')">Editar</span></div>
+          </div>
+        </div>
+        <div id="about-lugares" style="display:none;">
+          <div class="about-section">
+            <div class="about-section-title">Lugares</div>
+            <div class="about-row"><span class="about-label">Ciudad actual</span><span class="about-value"><span class="empty" onclick="openModal('city-modal')">Ciudad donde vive</span></span><span class="about-edit" onclick="openModal('city-modal')">Editar</span></div>
+            <div class="about-row"><span class="about-label">Ciudad de origen</span><span class="about-value"><span class="empty" onclick="openModal('origin-modal')">Ciudad natal</span></span><span class="about-edit" onclick="openModal('origin-modal')">Editar</span></div>
+          </div>
+        </div>
+        <div id="about-familia" style="display:none;">
+          <div class="about-section">
+            <div class="about-section-title">Familia y relaciones</div>
+            <div class="about-row"><span class="about-label">Estado sentimental</span><span class="about-value"><span class="empty" onclick="openModal('rel-modal')">Estado sentimental</span></span><span class="about-edit" onclick="openModal('rel-modal')">Editar</span></div>
+            <div class="about-row"><span class="about-label">Familiares</span><span class="about-value"><span class="empty-block" onclick="openModal('family-modal')">Agrega familiares del personaje</span></span><span class="about-edit" onclick="openModal('family-modal')">Editar</span></div>
+          </div>
+        </div>
+        <div id="about-filosofia" style="display:none;">
+          <div class="about-section">
+            <div class="about-section-title">Filosofía e intereses</div>
+            <div class="about-row"><span class="about-label">Religión</span><span class="about-value"><span class="empty" onclick="openModal('rel2-modal')">Religión del personaje</span></span><span class="about-edit" onclick="openModal('rel2-modal')">Editar</span></div>
+            <div class="about-row"><span class="about-label">Ideología política</span><span class="about-value"><span class="empty" onclick="openModal('pol-modal')">Ideología política</span></span><span class="about-edit" onclick="openModal('pol-modal')">Editar</span></div>
+            <div class="about-row"><span class="about-label">Inspiración</span><span class="about-value"><span class="empty" onclick="openModal('insp-modal')">Persona que lo inspira</span></span><span class="about-edit" onclick="openModal('insp-modal')">Editar</span></div>
+            <div class="about-row"><span class="about-label">Intereses</span><span class="about-value"><span class="empty-block" onclick="openModal('interests-modal')">Agrega intereses y cosas que le gustan</span></span><span class="about-edit" onclick="openModal('interests-modal')">Editar</span></div>
+            <div class="about-row"><span class="about-label">Objetivos</span><span class="about-value"><span class="empty-block" onclick="openModal('goals-modal')">Metas y objetivos del personaje</span></span><span class="about-edit" onclick="openModal('goals-modal')">Editar</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: AMIGOS -->
+  <div class="tab-content" id="tab-amigos" style="flex-direction:column;">
+    <div class="card">
+      <div class="card-title">Todos los amigos y personajes relacionados <a onclick="openModal('add-friend-modal')">+ Agregar</a></div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap:12px;">
+        <div class="friend-item" onclick="openModal('friend-detail-modal')"><div class="friend-avatar-big">👤</div><div class="friend-name"><span class="empty">Familiar 1</span></div></div>
+        <div class="friend-item" onclick="openModal('friend-detail-modal')"><div class="friend-avatar-big">👤</div><div class="friend-name"><span class="empty">Familiar 2</span></div></div>
+        <div class="friend-item" onclick="openModal('friend-detail-modal')"><div class="friend-avatar-big">👤</div><div class="friend-name"><span class="empty">Amigo cercano</span></div></div>
+        <div class="friend-item" onclick="openModal('friend-detail-modal')"><div class="friend-avatar-big">👤</div><div class="friend-name"><span class="empty">Aliado político</span></div></div>
+        <div class="friend-item" onclick="openModal('friend-detail-modal')"><div class="friend-avatar-big">👤</div><div class="friend-name"><span class="empty">Oponente / enemigo</span></div></div>
+        <div class="friend-item" onclick="openModal('friend-detail-modal')"><div class="friend-avatar-big">👤</div><div class="friend-name"><span class="empty">Otro personaje</span></div></div>
+        <div class="friend-item" onclick="openModal('add-friend-modal')" style="opacity:0.6;"><div class="friend-avatar-big" style="font-size:36px;">➕</div><div class="friend-name" style="color:var(--blue); text-align:center;">Agregar más</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: FOTOS -->
+  <div class="tab-content" id="tab-fotos" style="flex-direction:column;">
+    <div class="card">
+      <div class="card-title">Fotos <a onclick="openModal('photo-modal')">Agregar fotos</a></div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:4px;">
+        <div class="photo-thumb" style="height:180px;" onclick="openModal('photo-modal')">📷<br><small>Evento 1</small></div>
+        <div class="photo-thumb" style="height:180px;" onclick="openModal('photo-modal')">📷<br><small>Evento 2</small></div>
+        <div class="photo-thumb" style="height:180px;" onclick="openModal('photo-modal')">📷<br><small>Evento 3</small></div>
+        <div class="photo-thumb" style="height:180px;" onclick="openModal('photo-modal')">📷<br><small>Conclusión</small></div>
+        <div class="photo-thumb" style="height:180px;" onclick="openModal('photo-modal')">📷<br><small>Retrato</small></div>
+        <div class="photo-thumb" style="height:180px; font-size:32px;" onclick="openModal('photo-modal')">➕</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- GENERIC MODAL -->
+<div class="modal-overlay" id="generic-modal" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span id="modal-title-text">Editar información</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px; color:var(--text2); margin-bottom:10px;" id="modal-hint">Ingresa la información del personaje:</p>
+      <textarea class="modal-input" id="modal-input-field" rows="3"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentModalTarget = null;
+  let likeStates = {};
+
+  const modalConfigs = {
+    'bio-modal':           { title:'Sobre mí / Biografía',     hint:'Escribe la descripción biográfica del personaje:' },
+    'name-modal':          { title:'Nombre del personaje',      hint:'Nombre completo del personaje histórico:' },
+    'birth-modal':         { title:'Fecha de nacimiento',       hint:'Ingresa la fecha (día, mes, año):' },
+    'city-modal':          { title:'Ciudad donde vive',         hint:'Ciudad o región actual del personaje:' },
+    'origin-modal':        { title:'Ciudad de origen',          hint:'Lugar de nacimiento del personaje:' },
+    'rel-modal':           { title:'Estado sentimental',        hint:'(ej. Casado, Soltero, En una relación…)' },
+    'edu-modal':           { title:'Educación',                 hint:'Universidad, escuela o institución educativa:' },
+    'work-modal':          { title:'Trabajo / Ocupación',       hint:'Cargo, profesión u ocupación del personaje:' },
+    'lang-modal':          { title:'Idiomas',                   hint:'Idiomas que habla el personaje:' },
+    'rel2-modal':          { title:'Religión / Espiritualidad', hint:'Describe la religión o creencias del personaje:' },
+    'pol-modal':           { title:'Ideología política',        hint:'Describe la ideología política del personaje:' },
+    'insp-modal':          { title:'Persona inspiradora',       hint:'¿Quién inspira al personaje? ¿Por qué?' },
+    'quote-modal':         { title:'Frase / Cita del personaje',hint:'Escribe la cita o frase característica:', target:'quote-display' },
+    'quote-post-modal':    { title:'Cita en publicación',       hint:'Escribe la cita del personaje para esta publicación:', target:'post-quote-display' },
+    'post1-date-modal':    { title:'Fecha del primer evento',   hint:'Fecha exacta del primer evento histórico:', target:'p1-date' },
+    'post2-date-modal':    { title:'Fecha del segundo evento',  hint:'Fecha exacta del segundo evento histórico:', target:'p2-date' },
+    'post3-date-modal':    { title:'Fecha del tercer evento',   hint:'Fecha exacta del tercer evento histórico:', target:'p3-date' },
+    'post4-date-modal':    { title:'Fecha del desenlace',       hint:'Fecha exacta del desenlace del proceso:', target:'p4-date' },
+    'post1-body-modal':    { title:'Descripción: Inicio',       hint:'Narra el inicio del proceso de independencia/autonomía:' },
+    'post2-body-modal':    { title:'Descripción: Desarrollo',   hint:'Narra el desarrollo del proceso:' },
+    'post3-body-modal':    { title:'Descripción: Evento clave', hint:'Describe el evento clave del proceso:' },
+    'post4-body-modal':    { title:'Descripción: Conclusión',   hint:'Narra la conclusión del proceso:' },
+    'photo-modal':         { title:'Agregar foto',              hint:'En tu proyecto real, aquí insertarías una imagen relacionada al evento.' },
+    'cover-modal':         { title:'Foto de portada',           hint:'En tu proyecto, pega aquí la URL de la imagen de portada.' },
+    'pic-modal':           { title:'Foto de perfil',            hint:'En tu proyecto, pega aquí la URL de la foto de perfil.' },
+    'tag-modal':           { title:'Agregar etiqueta',          hint:'Escribe la etiqueta (hashtag) para esta publicación:' },
+    'comment-person-modal':{ title:'Nombre del comentarista',   hint:'Escribe el nombre del personaje que hace el comentario:' },
+    'comment-text-modal':  { title:'Texto del comentario',      hint:'Escribe el comentario o diálogo del personaje:' },
+    'reply-modal':         { title:'Responder comentario',      hint:'Escribe la respuesta al comentario:' },
+    'add-friend-modal':    { title:'Agregar amigo/personaje',   hint:'Nombre del personaje que quieres agregar:' },
+    'friend-detail-modal': { title:'Detalles del personaje',    hint:'Información sobre este personaje relacionado:' },
+    'friend1-modal':       { title:'Familiar / Aliado 1',       hint:'Nombre y relación con el personaje principal:' },
+    'friend2-modal':       { title:'Familiar / Aliado 2',       hint:'Nombre y relación con el personaje principal:' },
+    'friend3-modal':       { title:'Amigo cercano',             hint:'Nombre y relación con el personaje principal:' },
+    'friend4-modal':       { title:'Aliado político',           hint:'Nombre y rol en el proceso histórico:' },
+    'friend5-modal':       { title:'Oponente / Enemigo',        hint:'Nombre y rol en el proceso histórico:' },
+    'friend6-modal':       { title:'Otro personaje relacionado',hint:'Nombre y relación con el personaje principal:' },
+    'new-post-modal':      { title:'Crear publicación',         hint:'¿Qué quieres publicar? (puedes agregar más eventos aquí)' },
+    'story-modal':         { title:'Crear historia',            hint:'Crea una historia breve relacionada al personaje:' },
+    'event-modal':         { title:'Crear evento',              hint:'Describe un evento histórico importante del personaje:' },
+    'msg-modal':           { title:'Nuevo mensaje',             hint:'Escribe un mensaje del personaje o a él:' },
+    'post-options-modal':  { title:'Opciones de publicación',   hint:'Aquí puedes editar, eliminar o destacar esta publicación.' },
+    'gender-modal':        { title:'Género',                    hint:'Género del personaje histórico:' },
+    'org-modal':           { title:'Organización',              hint:'Organización o movimiento al que pertenece:' },
+    'learn-modal':         { title:'Fuentes de aprendizaje',    hint:'¿Cómo aprendió o se formó este personaje?' },
+    'family-modal':        { title:'Familia',                   hint:'Lista los familiares del personaje:' },
+    'interests-modal':     { title:'Intereses',                 hint:'Cosas que le gustan al personaje, aficiones, causas que apoya:' },
+    'goals-modal':         { title:'Objetivos / Metas',         hint:'Metas y objetivos del personaje histórico:' },
+  };
+
+  function openModal(id) {
+    const config = modalConfigs[id] || { title:'Editar', hint:'Ingresa la información:' };
+    document.getElementById('modal-title-text').textContent = config.title;
+    document.getElementById('modal-hint').textContent = config.hint;
+    document.getElementById('modal-input-field').value = '';
+    currentModalTarget = config.target || null;
+    document.getElementById('generic-modal').classList.add('open');
+    setTimeout(() => document.getElementById('modal-input-field').focus(), 100);
+  }
+
+  function closeModal() {
+    document.getElementById('generic-modal').classList.remove('open');
+    currentModalTarget = null;
+  }
+
+  function saveModal() {
+    const val = document.getElementById('modal-input-field').value.trim();
+    if (val && currentModalTarget) {
+      const el = document.getElementById(currentModalTarget);
+      if (el) {
+        el.textContent = val;
+        el.className = '';
+        el.style.color = '#050505';
+        el.style.fontStyle = 'normal';
+      }
+    }
+    closeModal();
+  }
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t,i) => {
+      const tabs = ['inicio','acerca','amigos','fotos'];
+      t.classList.toggle('active', tabs[i] === name);
+    });
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    const el = document.getElementById('tab-'+name);
+    if (el) el.classList.add('active');
+  }
+
+  function showAboutSection(name) {
+    ['info-basica','trabajo-edu','lugares','familia','filosofia'].forEach(s => {
+      const el = document.getElementById('about-'+s);
+      const aside = document.getElementById('aside-'+s);
+      if (el) el.style.display = s === name ? 'block' : 'none';
+      if (aside) { aside.style.color = s === name ? '#1877F2' : '#65676B'; aside.style.fontWeight = s === name ? '700' : '600'; }
+    });
+  }
+
+  function toggleComments(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function toggleLike(postId) {
+    const btn = document.getElementById('like-btn-'+postId);
+    const countEl = document.getElementById('likes-'+postId);
+    likeStates[postId] = !likeStates[postId];
+    let count = parseInt(countEl.textContent) || 0;
+    if (likeStates[postId]) {
+      btn.textContent = '👍 Me gusta';
+      btn.classList.add('liked');
+      count++;
+      btn.classList.add('pop');
+      setTimeout(() => btn.classList.remove('pop'), 300);
+    } else {
+      btn.textContent = '👍 Me gusta';
+      btn.classList.remove('liked');
+      count = Math.max(0, count - 1);
+    }
+    countEl.textContent = count;
+  }
+
+  function setReaction(postId, emoji, label) {
+    const btn = document.getElementById('like-btn-'+postId);
+    const countEl = document.getElementById('likes-'+postId);
+    btn.textContent = emoji + ' ' + label;
+    btn.classList.add('liked');
+    if (!likeStates[postId]) {
+      let count = parseInt(countEl.textContent) || 0;
+      countEl.textContent = count + 1;
+      likeStates[postId] = true;
+    }
+    btn.classList.add('pop');
+    setTimeout(() => btn.classList.remove('pop'), 300);
+  }
+
+  function addComment(event, postId) {
+    if (event.key === 'Enter') {
+      const input = event.target;
+      const text = input.value.trim();
+      if (!text) return;
+      const list = document.getElementById('comments-list-'+postId);
+      const div = document.createElement('div');
+      div.className = 'comment-box';
+      div.innerHTML = `
+        <div class="post-avatar" style="width:36px;height:36px;font-size:12px;">KN</div>
+        <div>
+          <div class="comment-bubble">
+            <div class="comment-user" style="font-weight:700;">Kinjeketile Ngwale</div>
+            <div>${text}</div>
+          </div>
+          <div class="comment-actions">
+            <span class="comment-action" onclick="likeComment(this)">Me gusta</span>
+            <span class="comment-action" onclick="openModal('reply-modal')">Responder</span>
+            <span style="color:var(--text2);">Justo ahora</span>
+          </div>
+        </div>`;
+      list.appendChild(div);
+      const countEl = document.getElementById('comment-count-'+postId);
+      countEl.textContent = parseInt(countEl.textContent) + 1;
+      input.value = '';
+    }
+  }
+
+  function likeComment(btn) {
+    if (btn.dataset.liked) {
+      btn.textContent = 'Me gusta';
+      btn.style.color = '#65676B';
+      delete btn.dataset.liked;
+    } else {
+      btn.textContent = '👍 1';
+      btn.style.color = '#1877F2';
+      btn.dataset.liked = '1';
+    }
+  }
+
+  function sharePost(postId) {
+    const titles = { post1:'Inicio del proceso', post2:'Desarrollo', post3:'Evento clave', post4:'Conclusión' };
+    alert('Compartiendo: ' + (titles[postId] || 'Publicación') + '\n\nEn tu proyecto, aquí puedes poner el texto de la publicación.');
+  }
+
+  function showReactionDetails(postId) {
+    alert('Reacciones de la publicación.\n\nEn tu proyecto, aquí mostrarías quiénes reaccionaron y cómo.');
+  }
+
+  function toggleDropdown(id) {
+    document.querySelectorAll('.dropdown').forEach(d => {
+      if (d.id !== id) d.classList.remove('open');
+    });
+    document.getElementById(id).classList.toggle('open');
+  }
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.topbar-icon') && !e.target.closest('.dropdown')) {
+      document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open'));
+    }
+  });
+</script>
+</body>
+</html>
